@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #4a752c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      #log {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 200px;
+        overflow-y: auto;
+        margin-top: 20px;
+        background-color: #f8f9fa;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WebSocket Connection Test</h1>
+
+    <div id="status" class="pending">Waiting to connect...</div>
+
+    <button id="connectBtn">Connect to WebSocket</button>
+    <button id="testCreateRoomBtn" disabled>Test Create Room</button>
+    <button id="clearLogBtn">Clear Log</button>
+
+    <div id="log"></div>
+
+    <script>
+      const statusDiv = document.getElementById("status");
+      const connectBtn = document.getElementById("connectBtn");
+      const testCreateRoomBtn = document.getElementById("testCreateRoomBtn");
+      const clearLogBtn = document.getElementById("clearLogBtn");
+      const logDiv = document.getElementById("log");
+
+      let socket = null;
+
+      function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      function updateStatus(message, type) {
+        statusDiv.textContent = message;
+        statusDiv.className = type;
+      }
+
+      connectBtn.addEventListener("click", () => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.close();
+          connectBtn.textContent = "Connect to WebSocket";
+          testCreateRoomBtn.disabled = true;
+          updateStatus("Disconnected", "pending");
+          return;
+        }
+
+        updateStatus("Connecting...", "pending");
+
+        // Determine WebSocket URL
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const host = window.location.hostname || "localhost:3000";
+        const wsUrl = `${protocol}//${host}`;
+
+        log(`Attempting to connect to: ${wsUrl}`);
+
+        try {
+          socket = new WebSocket(wsUrl);
+
+          socket.onopen = () => {
+            log("WebSocket connection established");
+            updateStatus("Connected", "success");
+            connectBtn.textContent = "Disconnect";
+            testCreateRoomBtn.disabled = false;
+          };
+
+          socket.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              log(`Received: ${JSON.stringify(data)}`);
+
+              if (data.type === "room-created") {
+                updateStatus(`Room created with ID: ${data.roomId}`, "success");
+              }
+            } catch (e) {
+              log(`Error parsing message: ${e.message}`);
+            }
+          };
+
+          socket.onclose = (event) => {
+            log(
+              `WebSocket closed: Code ${event.code}, Reason: ${
+                event.reason || "No reason provided"
+              }`
+            );
+            updateStatus("Disconnected", "error");
+            connectBtn.textContent = "Connect to WebSocket";
+            testCreateRoomBtn.disabled = true;
+          };
+
+          socket.onerror = (error) => {
+            log(`WebSocket error: ${error.message || "Unknown error"}`);
+            updateStatus("Connection error", "error");
+          };
+        } catch (error) {
+          log(`Error creating WebSocket: ${error.message}`);
+          updateStatus("Failed to create connection", "error");
+        }
+      });
+
+      testCreateRoomBtn.addEventListener("click", () => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          log("Sending create-room request");
+          socket.send(
+            JSON.stringify({
+              type: "create-room",
+            })
+          );
+        } else {
+          log("Socket not connected");
+          updateStatus("Not connected", "error");
+        }
+      });
+
+      clearLogBtn.addEventListener("click", () => {
+        logDiv.innerHTML = "";
+      });
+
+      // Check server health
+      fetch("/health")
+        .then((response) => {
+          if (response.ok) {
+            log("Server health check: OK");
+          } else {
+            log(`Server health check failed: ${response.status}`);
+          }
+        })
+        .catch((error) => {
+          log(`Server health check error: ${error.message}`);
+        });
+    </script>
+  </body>
+</html>

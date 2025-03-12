@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multiplayer Snake Game</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>Multiplayer Snake Game</h1>
+
+      <!-- Multiplayer Menu -->
+      <div class="multiplayer-menu" id="multiplayerMenu">
+        <h2>Play with a friend</h2>
+        <div class="menu-buttons">
+          <button id="createRoomBtn" class="menu-button">Create Room</button>
+          <button id="joinRoomBtn" class="menu-button">Join Room</button>
+        </div>
+
+        <!-- Join Room Form -->
+        <div class="join-form" id="joinForm" style="display: none">
+          <input
+            type="text"
+            id="roomIdInput"
+            placeholder="Enter Room ID"
+            maxlength="8"
+          />
+          <button id="joinGameBtn" class="menu-button">Join Game</button>
+          <button id="backBtn" class="menu-button">Back</button>
+        </div>
+
+        <!-- Room Created Info -->
+        <div class="room-info" id="roomInfo" style="display: none">
+          <p>Share this Room ID with your friend:</p>
+          <div class="room-id" id="roomIdDisplay"></div>
+          <p>Waiting for player 2 to join...</p>
+        </div>
+      </div>
+
+      <!-- Game Board -->
+      <div class="game-board" id="gameBoard" style="display: none">
+        <div class="game-details">
+          <span class="score" id="playerScore">Score: 0</span>
+          <span class="player-indicator" id="playerIndicator"
+            >You: <span id="playerColor"></span
+          ></span>
+          <span class="score" id="opponentScore">Opponent: 0</span>
+        </div>
+        <div class="play-board"></div>
+        <div class="controls">
+          <button class="control-button" data-key="ArrowLeft">←</button>
+          <div class="up-down">
+            <button class="control-button" data-key="ArrowUp">↑</button>
+            <button class="control-button" data-key="ArrowDown">↓</button>
+          </div>
+          <button class="control-button" data-key="ArrowRight">→</button>
+        </div>
+      </div>
+
+      <!-- Game Status -->
+      <div class="game-status" id="gameStatus" style="display: none">
+        <p id="statusMessage"></p>
+        <button id="playAgainBtn" class="menu-button">Play Again</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
