@@ -49,9 +49,8 @@ const connectWebSocket = () => {
 
     // Use location.hostname to make it work both locally and when deployed
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // For local development, hardcode to localhost:3000 if needed
-    const host =
-      window.location.hostname === "" ? "localhost:3000" : window.location.host;
+    // Use the actual hostname and port from the current page URL
+    const host = window.location.host;
     const wsUrl = `${protocol}//${host}`;
 
     console.log("Attempting to connect to WebSocket at:", wsUrl);

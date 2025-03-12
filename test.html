@@ -91,7 +91,8 @@
 
         // Determine WebSocket URL
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const host = window.location.hostname || "localhost:3000";
+        // Use the actual hostname and port from the current page URL
+        const host = window.location.host;
         const wsUrl = `${protocol}//${host}`;
 
         log(`Attempting to connect to: ${wsUrl}`);
